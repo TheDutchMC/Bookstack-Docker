@@ -1,0 +1,41 @@
+kind: pipeline
+type: kubernetes
+name: bookstack-docker
+
+triggers:
+  event:
+  - cron
+  cron:
+  - nightly
+  branch:
+  - master
+
+steps:
+  - name: Build BookStack Docker image
+    image: plugins/docker
+    settings:
+      repo: registry.thedutchmc.nl/bookstack
+      tags:
+      - latest
+      registry: registry.thedutchmc.nl
+
+  - name: Deploy to Kubernetes
+    image: sinlead/drone-kubectl
+    settings:
+      kubernetes_server:
+        from_secret: k8s_server
+      kubernetes_cert:
+        from_secret: k8s_cert
+      kubernetes_token:
+        from_secret: k8s_token
+    commands:
+      - kubectl set image deployment/bookstack-deployment bookstack=registry.thedutchmc.nl/bookstack:latest
+      
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: discord_webhook
+      username: Drone CI/CD - BookStack Docker Image 
+    when:
+      status: [ success, failure ]
