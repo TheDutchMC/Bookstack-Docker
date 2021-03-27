@@ -7,6 +7,8 @@ RUN apt-get install -y \
         git \
         nginx \
         supervisor \
+        zip \
+        unzip \
         software-properties-common
 
 #Add the PHP repository and update
