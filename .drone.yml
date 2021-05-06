@@ -38,4 +38,4 @@ steps:
         from_secret: discord_webhook
       username: Drone CI/CD - BookStack Docker Image 
     when:
-      status: [ success, failure ]
+      status: [ failure ]
