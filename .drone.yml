@@ -14,10 +14,10 @@ steps:
   - name: Build BookStack Docker image
     image: plugins/docker
     settings:
-      repo: registry.thedutchmc.nl/bookstack
+      repo: docker-registry.k8s.array21.dev/bookstack
       tags:
       - latest
-      registry: registry.thedutchmc.nl
+      registry: docker-registry.k8s.array21.dev
 
   - name: Deploy to Kubernetes
     image: sinlead/drone-kubectl
@@ -29,7 +29,7 @@ steps:
       kubernetes_token:
         from_secret: k8s_token
     commands:
-      - kubectl set image deployment/bookstack-deployment bookstack=registry.thedutchmc.nl/bookstack:latest
+      - kubectl set image deployment/bookstack bookstack=docker-registry.k8s.array21.dev/bookstack:latest
       
   - name: slack
     image: plugins/slack
