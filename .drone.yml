@@ -2,11 +2,7 @@ kind: pipeline
 type: kubernetes
 name: bookstack-docker
 
-triggers:
-  event:
-  - cron
-  cron:
-  - nightly
+trigger:
   branch:
   - master
 
@@ -18,6 +14,25 @@ steps:
       tags:
       - latest
       registry: docker-registry.k8s.array21.dev
+
+  - name: Deploy to server
+    image: ubuntu:latest
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+      SSH_KEY:
+        from_secret: ssh_key
+    commands:
+    - apt update && apt install -y rsync openssh-client dos2unix
+    
+    - mkdir -p $HOME/.ssh/
+    - eval `ssh-agent`
+    - echo "$SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+    - rm -rf $HOME/.ssh/config
+    - touch $HOME/.ssh/config
+    - echo "Host *\n\tStrictHostKeyChecking no" > $HOME/.ssh/config
+    
+    - ssh droneci@192.168.2.4 kubectl set image deployment/bookstack bookstack=docker-registry.k8s.array21.dev/bookstack:latest
 
   - name: Deploy to Kubernetes
     image: sinlead/drone-kubectl
